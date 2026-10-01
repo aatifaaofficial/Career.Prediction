@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Your official sleep disturbance analysis certificate and clinical evaluation report." />
+  <title>Official Sleep Analysis Certificate — SleepAI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=4.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body class="result-body">
+
+  <!-- ═══════════════════════ ANIMATED BACKGROUND ═══════════════════════ -->
+  <div class="bg-canvas">
+    <div class="aurora aurora-1"></div>
+    <div class="aurora aurora-2"></div>
+    <div class="aurora aurora-3"></div>
+    <div class="grid-overlay"></div>
+    <canvas id="neuralCanvas"></canvas>
+  </div>
+
+  <!-- ═══════════════════════ NAVBAR ═══════════════════════════════════ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo-wrap">
+        <img src="{{ url_for('static', filename='images/SleepAI LOGO.png') }}" class="nav-logo" alt="SleepAI Logo" />
+        <div class="nav-logo-glow"></div>
+      </div>
+      <span class="nav-title">SleepAI</span>
+      <span class="nav-version">v2.0</span>
+    </div>
+    <div class="nav-actions">
+      <!-- Language Switcher -->
+      <div class="lang-toggle" role="radiogroup" aria-label="Language Selector">
+        <button type="button" class="lang-btn active" id="langEnBtn" onclick="switchLanguage('en')" title="English">
+          <span class="lang-flag">🇬🇧</span> EN
+        </button>
+        <button type="button" class="lang-btn" id="langBnBtn" onclick="switchLanguage('bn')" title="বাংলা">
+          <span class="lang-flag">🇧🇩</span> বাংলা
+        </button>
+      </div>
+
+      <div class="nav-badge" id="navBadgeText">
+        <span class="badge-dot"></span>
+        Certified Analysis
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════ PATIENT PROFILE BANNER ═══════════════════ -->
+  <section class="patient-banner-wrap">
+    <div class="glass-card patient-card animate-slide-up">
+      <div class="patient-info-meta">
+        <div class="patient-avatar-wrap">
+          <div class="patient-avatar">👤</div>
+          <div class="avatar-glow"></div>
+        </div>
+        <div class="patient-details">
+          <span class="cert-id-tag">ID: {{ user_info.cert_id if user_info else 'CERT-SLP-OFFICIAL' }}</span>
+          <h2 class="patient-name">{{ user_info.user_name if user_info and user_info.user_name else 'Valued Patient' }}
+          </h2>
+          <div class="patient-pills">
+            <span class="p-pill pill-cyan">🎂 Age: <strong>{{ user_info.age if user_info and user_info.age else 'N/A' }}</strong></span>
+            <span class="p-pill pill-purple">👤 Gender: <strong>{{ user_info.gender if user_info and user_info.gender else 'N/A' }}</strong></span>
+            <span class="p-pill pill-mint">📅 Date: <strong>{{ timestamp }}</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="cert-badge-visual">
+        <img src="{{ url_for('static', filename='images/Seal Logo.png') }}" class="seal-badge-img" alt="Official Seal Logo" />
+        <span class="seal-text">Official Seal Verified</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ RESULT HERO ══════════════════════════════ -->
+  <section class="result-hero">
+    <div class="result-hero-content animate-fade-in">
+      <div class="result-label">
+        <span class="badge-pulse"></span>
+        🔍 Primary Sleep Pattern Classification
+      </div>
+      <h1 class="result-title">
+        <span class="result-emoji">{{ result.info.emoji }}</span>
+        <span class="result-career-name">{{ result.disorder }}</span>
+      </h1>
+      <p class="result-tagline">{{ result.info.tagline }}</p>
+
+      <!-- Confidence Badge -->
+      {% if result.confidence %}
+      <div class="confidence-badge">
+        <div class="confidence-ring">
+          <svg viewBox="0 0 100 100" class="confidence-svg">
+            <circle cx="50" cy="50" r="40" class="conf-track" />
+            <circle cx="50" cy="50" r="40" class="conf-fill"
+              stroke-dasharray="{{ (result.confidence / 100 * 251.2) | round(1) }} 251.2"
+              style="stroke: {{ result.info.color }}" />
+          </svg>
+          <span class="conf-value">{{ result.confidence | round(1) }}%</span>
+        </div>
+        <div class="conf-label">Analysis Match</div>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ PROBABILITY BARS ═════════════════════════ -->
+  <section class="section-wrap">
+    <div class="glass-card animate-slide-up">
+      <h3 class="card-heading">
+        <span class="card-heading-icon">📊</span>
+        Clinical Pattern Match Distribution
+      </h3>
+      <div class="prob-bars">
+        {% for label, pct in result.probabilities.items() %}
+        <div class="prob-row">
+          <div class="prob-label">
+            {% if label == 'Insomnia' %}🌙{% elif label == 'Sleep Apnea' %}😮‍💨{% else %}☀️{% endif %}
+            {{ label }}
+          </div>
+          <div class="prob-track">
+            <div class="prob-fill {% if label == result.disorder %}prob-winner{% endif %}"
+              style="width: {{ pct }}%;
+                      background: {% if label == 'Insomnia' %}linear-gradient(90deg, #34d399, #10b981){% elif label == 'Sleep Apnea' %}linear-gradient(90deg, #fb7185, #f43f5e){% else %}linear-gradient(90deg, #c084fc, #a855f7){% endif %}">
+            </div>
+          </div>
+          <div class="prob-pct">{{ pct }}%</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Score Breakdown -->
+      <div class="score-grid">
+        <div class="score-item ins">
+          <div class="score-num">{{ result.scores.Insomnia }}</div>
+          <div class="score-lbl">Insomnia Score</div>
+        </div>
+        <div class="score-item apn">
+          <div class="score-num">{{ result.scores['Sleep Apnea'] }}</div>
+          <div class="score-lbl">Sleep Apnea Score</div>
+        </div>
+        <div class="score-item hyp">
+          <div class="score-num">{{ result.scores.Hypersomnia }}</div>
+          <div class="score-lbl">Hypersomnia Score</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ DISORDER DESCRIPTION ═════════════════════ -->
+  <section class="section-wrap">
+    <div class="glass-card animate-slide-up">
+      <h3 class="card-heading">
+        <span class="card-heading-icon">💡</span>
+        Clinical Profile Overview
+      </h3>
+      <p class="card-text">{{ result.info.description }}</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ 4-COLUMN INFO GRID ═══════════════════════ -->
+  <section class="section-wrap">
+    <div class="info-grid">
+
+      <!-- Symptoms -->
+      <div class="glass-card info-card card-mint animate-slide-up">
+        <div class="info-icon">🩺</div>
+        <h4 class="info-heading">Primary Symptoms</h4>
+        <ul class="info-list">
+          {% for s in result.info.symptoms %}
+          <li>{{ s }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Risk Factors -->
+      <div class="glass-card info-card card-rose animate-slide-up delay-1">
+        <div class="info-icon">⚠️</div>
+        <h4 class="info-heading">Risk Factors</h4>
+        <ul class="info-list">
+          {% for s in result.info.risk_factors %}
+          <li>{{ s }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Lifestyle Tips -->
+      <div class="glass-card info-card card-cyan animate-slide-up delay-2">
+        <div class="info-icon">🛌</div>
+        <h4 class="info-heading">Lifestyle Recommendations</h4>
+        <ul class="info-list">
+          {% for s in result.info.lifestyle_tips %}
+          <li>{{ s }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- When to See a Doctor -->
+      <div class="glass-card info-card card-purple animate-slide-up delay-3">
+        <div class="info-icon">👨‍⚕️</div>
+        <h4 class="info-heading">Clinical Next Steps</h4>
+        <ul class="info-list">
+          {% for s in result.info.when_to_see_doctor %}
+          <li>{{ s }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ DISCLAIMER ══════════════════════════════ -->
+  <section class="section-wrap">
+    <div class="disclaimer-card animate-fade-in">
+      <div class="disclaimer-icon">⚕️</div>
+      <p class="disclaimer-text">
+        <strong>Medical Disclaimer:</strong> This digital screening report and certificate are intended for
+        <strong>informational and educational purposes only</strong> and do not constitute a formal clinical diagnosis.
+        Please present this report to a <strong>qualified sleep specialist or healthcare professional</strong> for
+        thorough medical evaluation.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ ACTION BUTTONS & CERTIFICATE DOWNLOAD ════ -->
+  <section class="section-wrap actions-section">
+    <button class="btn-primary btn-large btn-cert btn-glow" onclick="downloadCertificatePDF()">
+      <span class="btn-shimmer"></span>
+      <span class="btn-content">
+        🏆 Download Certificate (PDF)
+      </span>
+    </button>
+    <a href="/" class="btn-secondary btn-large">🔄 Retake Assessment</a>
+    <button class="btn-outline btn-large" onclick="window.print()">
+      🖨️ Print Report
+    </button>
+  </section>
+
+  <!-- Hidden data and images for JS Certificate & PDF generation -->
+  <img id="pdfSleepAiLogo" src="{{ url_for('static', filename='images/SleepAI LOGO.png') }}" style="display:none;" />
+  <img id="pdfSealLogo" src="{{ url_for('static', filename='images/Seal Logo.png') }}" style="display:none;" />
+  <script>
+    const USER_INFO = {
+      name: "{{ user_info.user_name if user_info and user_info.user_name else 'Valued Patient' }}",
+      age: "{{ user_info.age if user_info and user_info.age else 'N/A' }}",
+      gender: "{{ user_info.gender if user_info and user_info.gender else 'N/A' }}",
+      certId: "{{ user_info.cert_id if user_info and user_info.cert_id else 'CERT-SLP-OFFICIAL' }}",
+      timestamp: "{{ timestamp }}"
+    };
+
+    const RESULT_DATA = {
+      disorder: "{{ result.disorder }}",
+      career: "{{ result.disorder }}",
+      confidence: "{{ result.confidence | round(1) if result.confidence else 'N/A' }}",
+      tagline: {{ result.info.tagline | tojson }},
+      description: {{ result.info.description | tojson }},
+      scores: {
+        Insomnia: {{ result.scores.Insomnia }},
+        "Sleep Apnea": {{ result.scores['Sleep Apnea'] }},
+        Hypersomnia: {{ result.scores.Hypersomnia }}
+      },
+      symptoms: {{ result.info.symptoms | tojson }},
+      risk_factors: {{ result.info.risk_factors | tojson }},
+      lifestyle_tips: {{ result.info.lifestyle_tips | tojson }},
+      when_to_see_doctor: {{ result.info.when_to_see_doctor | tojson }},
+      quote: {{ result.info.quote | tojson }},
+      timestamp: "{{ timestamp }}",
+      answers: {{ answers | tojson }}
+    };
+  </script>
+  <script src="{{ url_for('static', filename='js/app.js') }}?v=5.0"></script>
+
+  <!-- ═══════════════════════ NEURAL CANVAS ANIMATION ═════════════════ -->
+  <script>
+    // Soothing 3D Mindwave & Neural Network animation
+    (function () {
+      const canvas = document.getElementById('neuralCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w, h, particles = [], mouse = { x: null, y: null };
+      const PARTICLE_COUNT = 75;
+      const CONNECTION_DIST = 160;
+      const COLORS = [
+        'rgba(52, 211, 153, ',   // mint emerald
+        'rgba(56, 189, 248, ',   // soft cyan
+        'rgba(192, 132, 252, ',  // amethyst purple
+        'rgba(255, 117, 151, ',  // soft rose pink
+      ];
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * w;
+          this.y = Math.random() * h;
+          this.vx = (Math.random() - 0.5) * 0.45;
+          this.vy = (Math.random() - 0.5) * 0.45;
+          this.r = Math.random() * 2.5 + 1.0;
+          this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+          this.alpha = Math.random() * 0.5 + 0.3;
+          this.pulseSpeed = Math.random() * 0.015 + 0.008;
+          this.pulsePhase = Math.random() * Math.PI * 2;
+        }
+        update(t) {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.x < 0 || this.x > w) this.vx *= -1;
+          if (this.y < 0 || this.y > h) this.vy *= -1;
+          this.alpha = 0.35 + Math.sin(t * this.pulseSpeed + this.pulsePhase) * 0.25;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+          ctx.fillStyle = this.color + this.alpha + ')';
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r * 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = this.color + (this.alpha * 0.18) + ')';
+          ctx.fill();
+        }
+      }
+
+      function init() {
+        resize();
+        particles = [];
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          particles.push(new Particle());
+        }
+      }
+
+      function drawMindWaves(t) {
+        const waveLines = [
+          { color: 'rgba(52, 211, 153, 0.09)', freq: 0.006, amp: 45, speed: 0.015, yOffset: h * 0.35 },
+          { color: 'rgba(56, 189, 248, 0.08)', freq: 0.008, amp: 60, speed: 0.01, yOffset: h * 0.5 },
+          { color: 'rgba(192, 132, 252, 0.07)', freq: 0.005, amp: 50, speed: 0.012, yOffset: h * 0.65 },
+        ];
+
+        waveLines.forEach(wave => {
+          ctx.beginPath();
+          ctx.moveTo(0, wave.yOffset);
+          for (let x = 0; x < w; x += 10) {
+            const y = wave.yOffset + Math.sin(x * wave.freq + t * wave.speed) * wave.amp + Math.cos(x * 0.002 + t * 0.01) * 15;
+            ctx.lineTo(x, y);
+          }
+          ctx.strokeStyle = wave.color;
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+        });
+      }
+
+      let frame = 0;
+      function animate() {
+        frame++;
+        ctx.clearRect(0, 0, w, h);
+        drawMindWaves(frame);
+
+        particles.forEach(p => { p.update(frame); p.draw(); });
+
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < CONNECTION_DIST) {
+              const opacity = (1 - dist / CONNECTION_DIST) * 0.18;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(52, 211, 153, ${opacity})`;
+              ctx.lineWidth = 0.7;
+              ctx.stroke();
+            }
+          }
+        }
+
+        if (mouse.x && mouse.y) {
+          particles.forEach(p => {
+            const dx = p.x - mouse.x;
+            const dy = p.y - mouse.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 220) {
+              const opacity = (1 - dist / 220) * 0.35;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(mouse.x, mouse.y);
+              ctx.strokeStyle = `rgba(192, 132, 252, ${opacity})`;
+              ctx.lineWidth = 0.9;
+              ctx.stroke();
+            }
+          });
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      window.addEventListener('resize', () => { resize(); });
+      window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+      window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
+
+      init();
+      animate();
+    })();
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('navbar');
+      if (window.scrollY > 40) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+  </script>
+</body>
+
+</html>

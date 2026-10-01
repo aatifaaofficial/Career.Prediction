@@ -1,0 +1,4 @@
+Timestamp,Certificate_ID,Full_Name,Age,Gender,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15,Q16,Q17,Q18,Q19,Q20,Insomnia_Score,Sleep_Apnea_Score,Hypersomnia_Score,Predicted_Disorder,Confidence_Percentage
+"26 July 2026, 05:20 PM","CERT-SLP-20260726-1BF46D","Sarah Jenkins",34,"Female",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,"Insomnia",100.0
+"26 July 2026, 05:25 PM","CERT-SLP-20260726-9A82C1","David Miller",42,"Male",1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,20,0,"Sleep Apnea",100.0
+"26 July 2026, 05:30 PM","CERT-SLP-20260726-4F71E8","Elena Rostova",26,"Female",2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,20,"Hypersomnia",100.0

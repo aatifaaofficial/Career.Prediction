@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="AI-powered sleep disturbance screening tool. Answer 20 questions to receive your clinical-grade sleep analysis certificate." />
+  <title>SleepAI — Advanced Sleep Disturbance Analyzer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+</head>
+
+<body>
+
+  <!-- ═══════════════════════ ANIMATED BACKGROUND ═══════════════════════ -->
+  <div class="bg-canvas">
+    <div class="aurora aurora-1"></div>
+    <div class="aurora aurora-2"></div>
+    <div class="aurora aurora-3"></div>
+    <div class="grid-overlay"></div>
+    <canvas id="neuralCanvas"></canvas>
+  </div>
+
+  <!-- ═══════════════════════ NAVBAR ═══════════════════════════════════ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo-wrap">
+        <img src="{{ url_for('static', filename='images/SleepAI LOGO.png') }}" class="nav-logo" alt="SleepAI Logo" />
+        <div class="nav-logo-glow"></div>
+      </div>
+      <span class="nav-title">SleepAI</span>
+      <span class="nav-version">v2.0</span>
+    </div>
+    <div class="nav-actions">
+      <!-- Language Switcher -->
+      <div class="lang-toggle" role="radiogroup" aria-label="Language Selector">
+        <button type="button" class="lang-btn active" id="langEnBtn" onclick="switchLanguage('en')" title="English">
+          <span class="lang-flag">🇬🇧</span> EN
+        </button>
+        <button type="button" class="lang-btn" id="langBnBtn" onclick="switchLanguage('bn')" title="বাংলা">
+          <span class="lang-flag">🇧🇩</span> বাংলা
+        </button>
+      </div>
+
+      <div class="nav-badge" id="navBadgeText">
+        <span class="badge-dot"></span>
+        Medical Screening
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════ HERO SECTION ═════════════════════════════ -->
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <div class="hero-badge animate-fade-in">
+        <span class="badge-pulse"></span>
+        <span class="badge-icon">🩺</span>
+        AI Clinical Sleep Screening
+      </div>
+
+      <h1 class="hero-title animate-slide-up">
+        <span class="title-line">Sleep Disturbance</span>
+        <span class="title-line gradient-text-animated">Analyzer</span>
+      </h1>
+
+      <p class="hero-subtitle animate-fade-in-delay">
+        Advanced AI-powered sleep pattern recognition system.
+        <br />
+        Get personalized clinical insights and a digital screening certificate.
+      </p>
+
+      <div class="hero-features animate-fade-in-delay2">
+        <div class="feature-chip">
+          <div class="chip-icon">✨</div>
+          <div class="chip-content">
+            <span class="chip-label">3 Patterns</span>
+            <span class="chip-sub">Disorder Recognition</span>
+          </div>
+        </div>
+        <div class="feature-chip">
+          <div class="chip-icon">📋</div>
+          <div class="chip-content">
+            <span class="chip-label">20 Questions</span>
+            <span class="chip-sub">Clinical Assessment</span>
+          </div>
+        </div>
+        <div class="feature-chip">
+          <div class="chip-icon">📜</div>
+          <div class="chip-content">
+            <span class="chip-label">Certificate</span>
+            <span class="chip-sub">PDF Download</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-cta animate-fade-in-delay2">
+        <button class="btn-primary btn-glow" id="startBtn" onclick="showUserInfoStep()">
+          <span class="btn-shimmer"></span>
+          <span class="btn-content">
+            <span class="btn-icon">🚀</span>
+            Start Free Assessment
+            <svg class="btn-arrow-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </span>
+        </button>
+        <div class="cta-note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          Free & confidential • 3 min assessment
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual animate-float">
+      <div class="holographic-card" id="holoCard">
+        <div class="holo-3d-texture-bg"
+          style="background-image: url('{{ url_for('static', filename='images/mind_3d_texture.png') }}');"></div>
+        <div class="holo-shimmer"></div>
+        <div class="holo-rings">
+          <div class="orbit-ring ring-1">
+            <div class="orbit-dot"></div>
+          </div>
+          <div class="orbit-ring ring-2">
+            <div class="orbit-dot"></div>
+          </div>
+          <div class="orbit-ring ring-3">
+            <div class="orbit-dot"></div>
+          </div>
+        </div>
+        <div class="holo-content">
+          <div class="card-3d-orb">
+            <img src="{{ url_for('static', filename='images/mind_3d_texture.png') }}" class="texture-orb-img"
+              alt="Mind 3D Texture" />
+            <img src="{{ url_for('static', filename='images/SleepAI LOGO.png') }}" class="hero-card-logo"
+              alt="SleepAI Logo" />
+          </div>
+          <div class="holo-stats">
+            <div class="holo-stat">
+              <span class="holo-stat-num" id="counterAccuracy">97</span>
+              <span class="holo-stat-unit">%</span>
+              <span class="holo-stat-label">Accuracy</span>
+            </div>
+            <div class="holo-divider"></div>
+            <div class="holo-stat">
+              <span class="holo-stat-num" id="counterUsers">5.2</span>
+              <span class="holo-stat-unit">K</span>
+              <span class="holo-stat-label">Users</span>
+            </div>
+          </div>
+        </div>
+        <div class="holo-scanline"></div>
+        <div class="holo-corner holo-tl"></div>
+        <div class="holo-corner holo-tr"></div>
+        <div class="holo-corner holo-bl"></div>
+        <div class="holo-corner holo-br"></div>
+      </div>
+
+      <!-- Floating tech badges around card -->
+      <div class="float-badge fb-1">🧠 Mind AI Engine</div>
+      <div class="float-badge fb-2">✨ 3D Neural Flow</div>
+      <div class="float-badge fb-3">🔬 Clinical Grade</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ USER INFO STEP ═══════════════════════════ -->
+  <section class="user-info-section hidden" id="userInfoSection">
+    <div class="quiz-container">
+      <div class="glass-card user-form-card">
+        <div class="form-header">
+          <div class="step-indicator">
+            <div class="step-circle active">1</div>
+            <div class="step-line"></div>
+            <div class="step-circle">2</div>
+          </div>
+          <span class="form-badge">Step 1 of 2</span>
+          <h2 class="form-title">Patient Profile</h2>
+          <p class="form-subtitle">Enter your details for accurate clinical analysis and certificate generation.</p>
+        </div>
+
+        <form id="patientForm" onsubmit="submitPatientInfo(event)">
+          <div class="input-group">
+            <label for="userName">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Full Name <span class="req">*</span>
+            </label>
+            <input type="text" id="userName" placeholder="e.g. Sowrav Dey" required />
+          </div>
+
+          <div class="input-row">
+            <div class="input-group">
+              <label for="userAge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                Age <span class="req">*</span>
+              </label>
+              <input type="number" id="userAge" min="1" max="120" placeholder="e.g. 16" required />
+            </div>
+
+            <div class="input-group">
+              <label for="userGender">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="8" r="5" />
+                  <path d="M20 21a8 8 0 00-16 0" />
+                </svg>
+                Gender <span class="req">*</span>
+              </label>
+              <select id="userGender" required>
+                <option value="" disabled selected>Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="user-form-nav">
+            <button type="button" class="btn-secondary" onclick="backToHero()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+            <button type="submit" class="btn-primary">
+              Begin 20 Questions
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ QUESTION FORM ════════════════════════════ -->
+  <section class="quiz-section hidden" id="quizSection">
+    <div class="quiz-container">
+
+      <!-- Progress Bar -->
+      <div class="progress-header">
+        <div class="progress-meta">
+          <span class="progress-label">Question <span id="currentQ">1</span> of 20</span>
+          <span class="progress-pct" id="progressPct">5%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-bar" id="progressBar" style="width:5%"></div>
+        </div>
+        <div class="progress-dots" id="progressDots"></div>
+      </div>
+
+      <!-- Question Card -->
+      <div class="question-card" id="questionCard">
+        <div class="question-number" id="qNumber">Q1</div>
+        <h2 class="question-text" id="questionText"></h2>
+        <div class="options-list" id="optionsList"></div>
+        <div class="validation-msg hidden" id="validationMsg">
+          ⚠️ Please select an answer to continue.
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="quiz-nav">
+        <button class="btn-secondary" id="prevBtn" onclick="prevQuestion()" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Previous
+        </button>
+        <button class="btn-primary" id="nextBtn" onclick="nextQuestion()">
+          Next
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ LOADING OVERLAY ══════════════════════════ -->
+  <div class="loading-overlay hidden" id="loadingOverlay">
+    <div class="loading-card">
+      <div class="loader-ring"></div>
+      <div class="loading-text">Analysing your sleep patterns…</div>
+      <div class="loading-sub">Generating clinical assessment and certificate profile</div>
+      <div class="loading-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ FLASH ERROR ══════════════════════════════ -->
+  {% if error %}
+  <div class="flash-error" id="flashError">
+    ⚠️ {{ error }}
+    <button onclick="document.getElementById('flashError').remove()">✕</button>
+  </div>
+  {% endif %}
+
+  <script src="{{ url_for('static', filename='js/app.js') }}?v=5.0"></script>
+
+  <!-- ═══════════════════════ NEURAL CANVAS ANIMATION ═════════════════ -->
+  <script>
+    // Soothing 3D Mindwave & Neural Network animation
+    (function () {
+      const canvas = document.getElementById('neuralCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w, h, particles = [], mouse = { x: null, y: null };
+      const PARTICLE_COUNT = 75;
+      const CONNECTION_DIST = 160;
+      const COLORS = [
+        'rgba(52, 211, 153, ',   // soothing emerald mint
+        'rgba(34, 211, 238, ',   // calming cyan teal
+        'rgba(192, 132, 252, ',  // deep amethyst lavender
+        'rgba(251, 191, 36, ',   // serene gold
+      ];
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * w;
+          this.y = Math.random() * h;
+          this.vx = (Math.random() - 0.5) * 0.45;
+          this.vy = (Math.random() - 0.5) * 0.45;
+          this.r = Math.random() * 2.5 + 1.0;
+          this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+          this.alpha = Math.random() * 0.5 + 0.3;
+          this.pulseSpeed = Math.random() * 0.015 + 0.008;
+          this.pulsePhase = Math.random() * Math.PI * 2;
+        }
+        update(t) {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.x < 0 || this.x > w) this.vx *= -1;
+          if (this.y < 0 || this.y > h) this.vy *= -1;
+          this.alpha = 0.35 + Math.sin(t * this.pulseSpeed + this.pulsePhase) * 0.25;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+          ctx.fillStyle = this.color + this.alpha + ')';
+          ctx.fill();
+          // Soft ambient glow
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r * 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = this.color + (this.alpha * 0.18) + ')';
+          ctx.fill();
+        }
+      }
+
+      function init() {
+        resize();
+        particles = [];
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          particles.push(new Particle());
+        }
+      }
+
+      // Draw soothing 3D mind sine waves
+      function drawMindWaves(t) {
+        const waveLines = [
+          { color: 'rgba(52, 211, 153, 0.09)', freq: 0.006, amp: 45, speed: 0.015, yOffset: h * 0.35 },
+          { color: 'rgba(34, 211, 238, 0.08)', freq: 0.008, amp: 60, speed: 0.01, yOffset: h * 0.5 },
+          { color: 'rgba(192, 132, 252, 0.07)', freq: 0.005, amp: 50, speed: 0.012, yOffset: h * 0.65 },
+        ];
+
+        waveLines.forEach(wave => {
+          ctx.beginPath();
+          ctx.moveTo(0, wave.yOffset);
+          for (let x = 0; x < w; x += 10) {
+            const y = wave.yOffset + Math.sin(x * wave.freq + t * wave.speed) * wave.amp + Math.cos(x * 0.002 + t * 0.01) * 15;
+            ctx.lineTo(x, y);
+          }
+          ctx.strokeStyle = wave.color;
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+        });
+      }
+
+      let frame = 0;
+      function animate() {
+        frame++;
+        ctx.clearRect(0, 0, w, h);
+
+        // Draw soothing waves
+        drawMindWaves(frame);
+
+        // Update & draw particles
+        particles.forEach(p => { p.update(frame); p.draw(); });
+
+        // Draw neural connections
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < CONNECTION_DIST) {
+              const opacity = (1 - dist / CONNECTION_DIST) * 0.18;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(52, 211, 153, ${opacity})`;
+              ctx.lineWidth = 0.7;
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Mouse interaction light beam
+        if (mouse.x && mouse.y) {
+          particles.forEach(p => {
+            const dx = p.x - mouse.x;
+            const dy = p.y - mouse.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 220) {
+              const opacity = (1 - dist / 220) * 0.35;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(mouse.x, mouse.y);
+              ctx.strokeStyle = `rgba(192, 132, 252, ${opacity})`;
+              ctx.lineWidth = 0.9;
+              ctx.stroke();
+            }
+          });
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      window.addEventListener('resize', () => { resize(); });
+      window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+      window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
+
+      init();
+      animate();
+    })();
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('navbar');
+      if (window.scrollY > 40) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+
+    // Holographic card tilt on mouse
+    const holoCard = document.getElementById('holoCard');
+    if (holoCard) {
+      holoCard.addEventListener('mousemove', (e) => {
+        const rect = holoCard.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const midX = rect.width / 2;
+        const midY = rect.height / 2;
+        const rotateY = ((x - midX) / midX) * 12;
+        const rotateX = -((y - midY) / midY) * 12;
+        holoCard.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+      });
+      holoCard.addEventListener('mouseleave', () => {
+        holoCard.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+      });
+    }
+  </script>
+
+</body>
+
+</html>
